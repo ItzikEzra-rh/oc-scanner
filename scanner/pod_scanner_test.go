@@ -68,7 +68,6 @@ func fakeCmd(output string, execErr error) *exec.Cmd {
 	cmd := exec.Command(cmdName, cmdArgs...)
 
 	if execErr != nil {
-		// עבור פקודות שצריכות להיכשל, אנחנו מחליפים את הפלט
 		cmd.Stdout = bytes.NewBufferString("")
 		cmd.Stderr = bytes.NewBufferString(execErr.Error())
 	}
