@@ -5,6 +5,8 @@ import (
 	"os/exec"
 )
 
+var ExecCommand = exec.Command
+
 type PodScanner struct {
 	Namespace string
 }
@@ -12,10 +14,10 @@ type PodScanner struct {
 func (p PodScanner) Scan() error {
 	fmt.Println("Scanning pods")
 
-	cmd := exec.Command("oc", "get", "pods", "-n", p.Namespace, "-o", "wide")
+	cmd := ExecCommand("oc", "get", "pods", "-n", p.Namespace, "-o", "wide")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("error running oc: %v", err)
+		return fmt.Errorf("error running kubectl: %v", err)
 	}
 
 	fmt.Println(string(output))

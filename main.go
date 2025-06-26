@@ -5,7 +5,7 @@ import (
 	"os"
 	"sync"
 
-	"kube-scanner/scanner"
+	"oc-scanner/scanner"
 
 	"github.com/texttheater/golang-levenshtein/levenshtein"
 )
