@@ -14,6 +14,10 @@ type PodScanner struct {
 func (p PodScanner) Scan() error {
 	fmt.Println("Scanning pods")
 
+	if p.Namespace == "" {
+		return fmt.Errorf("namespace is empty")
+	}
+
 	cmd := ExecCommand("oc", "get", "pods", "-n", p.Namespace, "-o", "wide")
 	output, err := cmd.CombinedOutput()
 	if err != nil {

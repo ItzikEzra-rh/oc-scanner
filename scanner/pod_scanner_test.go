@@ -21,35 +21,45 @@ var _ = Describe("PodScanner", func() {
 	AfterEach(func() {
 		scanner.ExecCommand = originalExecCommand
 	})
+	Context("when running oc", func() {
+		It("should run kubectl with correct arguments", func() {
+			var calledArgs []string
 
-	It("should run kubectl with correct arguments", func() {
-		var calledArgs []string
+			scanner.ExecCommand = func(name string, args ...string) *exec.Cmd {
+				calledArgs = append([]string{name}, args...)
 
-		scanner.ExecCommand = func(name string, args ...string) *exec.Cmd {
-			calledArgs = append([]string{name}, args...)
+				return fakeCmd("mock output", nil)
+			}
 
-			return fakeCmd("mock output", nil)
-		}
+			ps := scanner.PodScanner{Namespace: "test-ns"}
+			err := ps.Scan()
 
-		ps := scanner.PodScanner{Namespace: "test-ns"}
-		err := ps.Scan()
+			Expect(err).To(BeNil())
+			Expect(calledArgs).To(Equal([]string{
+				"oc", "get", "pods", "-n", "test-ns", "-o", "wide",
+			}))
+		})
 
-		Expect(err).To(BeNil())
-		Expect(calledArgs).To(Equal([]string{
-			"oc", "get", "pods", "-n", "test-ns", "-o", "wide",
-		}))
+		It("should return error if oc fails", func() {
+			scanner.ExecCommand = func(name string, args ...string) *exec.Cmd {
+				return fakeCmd("", errors.New("command failed"))
+			}
+
+			ps := scanner.PodScanner{Namespace: "fail-ns"}
+			err := ps.Scan()
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("error running kubectl"))
+		})
 	})
 
-	It("should return error if oc fails", func() {
-		scanner.ExecCommand = func(name string, args ...string) *exec.Cmd {
-			return fakeCmd("", errors.New("command failed"))
-		}
-
-		ps := scanner.PodScanner{Namespace: "fail-ns"}
-		err := ps.Scan()
-
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("error running kubectl"))
+	Context("Edge cases", func() {
+		It("should return error if namespace is empty", func() {
+			ps := scanner.PodScanner{Namespace: ""}
+			err := ps.Scan()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("namespace is empty"))
+		})
 	})
 })
 

@@ -49,6 +49,12 @@ func main() {
 		return
 	}
 
+	// Validate that the namespace is not empty
+	if namespace == "" {
+		fmt.Println("Error: namespace is empty")
+		return
+	}
+
 	// Resource type mapping - maps resource type names to factory functions that create appropriate scanners
 	// This design pattern allows easy addition of new resource types by just adding entries to this map
 	scannerMap := map[string]func(string) scanner.Scanner{
